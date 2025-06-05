@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 import { jsPDF } from "jspdf";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,16 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+type ToneType = "Formal" | "Friendly" | "Confident" | "Enthusiastic";
+
 const CoverLetterForm: React.FC = () => {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [resume, setResume] = useState("");
     const [jobDesc, setJobDesc] = useState("");
-    const [tone, setTone] = useState("Formal");
+    const [tone, setTone] = useState<ToneType>("Formal");
     const [geminiApiKey, setGeminiApiKey] = useState("");
     const [loading, setLoading] = useState(false);
-    const [isError, setIsError] = useState(false);
     const [coverLetter, setCoverLetter] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -134,13 +134,11 @@ Note: This is a template generated when API is unavailable. For a fully customiz
         e.preventDefault();
         setLoading(true);
         setCoverLetter("");
-        setIsError(false);
         setErrorMessage("");
 
         try {
             if (geminiApiKey) {
                 const prompt = generatePrompt();
-                console.log("Generated prompt for Gemini:", prompt);
                 
                 const generatedContent = await callGeminiAPI(prompt);
                 setCoverLetter(generatedContent);
@@ -151,12 +149,11 @@ Note: This is a template generated when API is unavailable. For a fully customiz
             }
         } catch (error) {
             console.error("Error generating cover letter:", error);
-            setErrorMessage(error.message);
+            setErrorMessage(error instanceof Error ? error.message : String(error));
             
             // Use fallback template if API fails
             const fallbackLetter = generateFallbackCoverLetter();
             setCoverLetter(fallbackLetter);
-            setIsError(false); // Don't mark as error since we have a fallback
         } finally {
             setLoading(false);
         }
@@ -303,7 +300,7 @@ Note: This is a template generated when API is unavailable. For a fully customiz
 
                 <div className="space-y-2">
                     <Label htmlFor="tone">Cover Letter Tone</Label>
-                    <Select value={tone} onValueChange={setTone}>
+                    <Select value={tone} onValueChange={(value) => setTone(value as ToneType)}>
                         <SelectTrigger className="focus:ring-2 focus:ring-blue-500" style={{ backgroundColor: "inherit", color: "inherit" }}>
                             <SelectValue placeholder="Choose your preferred tone" />
                         </SelectTrigger>
